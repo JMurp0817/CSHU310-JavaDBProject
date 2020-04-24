@@ -1,3 +1,6 @@
+CREATE DATABASE finalProject;
+USE finalProject;
+
 CREATE TABLE Item(
 ID int AUTO_INCREMENT,
 ItemCode varchar(10) NOT NULL UNIQUE,

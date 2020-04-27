@@ -10,7 +10,7 @@ public class Project {
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 		
 		Connection con = null;
-		Statement stmt = null;
+		Statement queryStmt = null, updateStmt = null;
 		try
 		{	
 			int nRemotePort = port; // remote port number of your database
@@ -27,9 +27,11 @@ public class Project {
 			
 			con.setAutoCommit(false);
 			
-			stmt = con.createStatement();
+			queryStmt = con.createStatement();
+			updateStmt = con.createStatement();
 			
 			ResultSet resultSet = null;
+			int updateResultSet = 0;
 			
 			System.out.println(args[0]+" "+ args[1]);
 			
@@ -43,53 +45,66 @@ public class Project {
 				
 			} else if(args[0].equals("GetItems")) {
 				if(args[1].equals("%")) {
-					resultSet = stmt.executeQuery("SELECT ItemCode,ItemDescription,Price FROM `"+dbName+"`.`Item`");
+					resultSet = queryStmt.executeQuery("SELECT ItemCode,ItemDescription,Price FROM `"+dbName+"`.`Item`");
 				} else {
-					resultSet = stmt.executeQuery("SELECT ItemCode,ItemDescription,Price FROM `"+dbName+"`.`Item` WHERE `ItemCode`='"+args[1]+"'");
+					resultSet = queryStmt.executeQuery("SELECT ItemCode,ItemDescription,Price FROM `"+dbName+"`.`Item` WHERE `ItemCode`='"+args[1]+"'");
 				}
 			} else if(args[0].equals("GetShipments")) {
 				if(args[1].equals("%")) {
-					resultSet = stmt.executeQuery("SELECT * FROM `"+dbName+"`.`Shipment` JOIN `"+dbName+"`.`Item` ON `Shipment`.`ItemID` = `Item`.`ID`");
+					resultSet = queryStmt.executeQuery("SELECT * FROM `"+dbName+"`.`Shipment` JOIN `"+dbName+"`.`Item` ON `Shipment`.`ItemID` = `Item`.`ID`");
 				} else {
-					resultSet = stmt.executeQuery("SELECT * FROM `"+dbName+"`.`Shipment` JOIN `"+dbName+"`.`Item` ON `Shipment`.`ItemID` = `Item`.`ID` WHERE ItemCode='"+args[1]+"'");
+					resultSet = queryStmt.executeQuery("SELECT * FROM `"+dbName+"`.`Shipment` JOIN `"+dbName+"`.`Item` ON `Shipment`.`ItemID` = `Item`.`ID` WHERE ItemCode='"+args[1]+"'");
 				}
 			} else if(args[0].equals("GetPurchases")) {
 				if(args[1].equals("%")) {
-					resultSet = stmt.executeQuery("SELECT * FROM `"+dbName+"`.`Purchase` JOIN `"+dbName+"`.`Item` ON `Purchase`.`ItemID` = `Item`.`ID`");
+					resultSet = queryStmt.executeQuery("SELECT * FROM `"+dbName+"`.`Purchase` JOIN `"+dbName+"`.`Item` ON `Purchase`.`ItemID` = `Item`.`ID`");
 				} else {
-					resultSet = stmt.executeQuery("SELECT * FROM `"+dbName+"`.`Purchase` JOIN `"+dbName+"`.`Item` ON `Purchase`.`ItemID` = `Item`.`ID` WHERE ItemCode='"+args[1]+"'");
+					resultSet = queryStmt.executeQuery("SELECT * FROM `"+dbName+"`.`Purchase` JOIN `"+dbName+"`.`Item` ON `Purchase`.`ItemID` = `Item`.`ID` WHERE ItemCode='"+args[1]+"'");
 				}
 			} else if(args[0].equals("ItemsAvailable")) {
 				
 			} else if(args[0].equals("UpdateItem")) {
 				
 			} else if(args[0].equals("DeleteItem")) {
-				
+				updateResultSet = updateStmt.executeUpdate("DELETE FROM `"+dbName+"`.`Item` WHERE ItemCode ='"+args[1]+"'");
+				if(updateResultSet == 1) {
+					System.out.println("Successfully deleted "+args[1]);
+				} else {
+					System.out.println("There is no Item with the code "+args[1]);
+				}
 			} else if(args[0].equals("DeleteShipment")) {
-				
+				updateResultSet = updateStmt.executeUpdate("DELETE FROM `"+dbName+"`.`Shipment` WHERE ItemID IN (SELECT ID FROM `"+dbName+"`.`Item` WHERE ItemCode = '"+args[1]+"')  ORDER BY ShipmentDate DESC LIMIT 1");
+				if(updateResultSet == 1) {
+					System.out.println("Successfully deleted most recent Shipment of "+args[1]);
+				} else {
+					System.out.println("There are no Shipments of "+args[1]);
+				}				
 			} else if(args[0].equals("DeletePurchase")) {
-				
+				updateResultSet = updateStmt.executeUpdate("DELETE FROM `"+dbName+"`.`Purchase` WHERE ItemID IN (SELECT ID FROM `"+dbName+"`.`Item` WHERE ItemCode = '"+args[1]+"')  ORDER BY PurchaseDate DESC LIMIT 1");
+				if(updateResultSet == 1) {
+					System.out.println("Successfully deleted most recent Purchase of "+args[1]);
+				} else {
+					System.out.println("There are no Purchases of "+args[1]);
+				}	
 			} else {
 				usage();
 			}
 			
-			ResultSetMetaData rsmd = resultSet.getMetaData();
+			if(resultSet != null) {
+				ResultSetMetaData rsmd = resultSet.getMetaData();
 
-			int columnsNumber = rsmd.getColumnCount();
-			if(columnsNumber > 0) {
-				while (resultSet.next()) {
-					for (int i = 1; i <= columnsNumber; i++) {
-						if (i > 1) System.out.print(",  ");
-						String columnValue = resultSet.getString(i);
-						System.out.print(rsmd.getColumnName(i) + " " + columnValue);
-					}
-					System.out.println(" ");
-				}	
-			} else {
-				System.out.println("Result set is empty");
+				int columnsNumber = rsmd.getColumnCount();
+				if(columnsNumber > 0) {
+					while (resultSet.next()) {
+						for (int i = 1; i <= columnsNumber; i++) {
+							if (i > 1) System.out.print(",  ");
+							String columnValue = resultSet.getString(i);
+							System.out.print(rsmd.getColumnName(i) + " " + columnValue);
+						}
+						System.out.println(" ");
+					}	
+				}
 			}
-						
-			
 		}
 		catch( SQLException e )
 		{

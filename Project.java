@@ -13,8 +13,8 @@ public class Project {
 		Statement queryStmt = null, updateStmt = null;
 		try
 		{	
-			int nRemotePort = 55797; // remote port number of your database
-			String strDbPassword = "19hello99";                    // database login password
+			int nRemotePort = port; // remote port number of your database
+			String strDbPassword = "password";                    // database login password
 			String dbName = "finalProject";  
 			
 			/*

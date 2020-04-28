@@ -7,21 +7,17 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class Project {
-
+	static boolean usagePrint = false;
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 		
 		Connection con = null;
-		Statement queryStmt = null, updateStmt = null;
+		Statement queryStmt = null;
 		try
 		{	
 			int nRemotePort = port; // remote port number of your database
-			String strDbPassword = "Password";                    // database login password
+			String strDbPassword = "password";                    // database login password
 			String dbName = "finalProject";
-			
-			/*
-			 * LOAD the Database DRIVER and obtain a CONNECTION
-			 * 
-			 * */
+
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			con = DriverManager.getConnection("jdbc:mysql://localhost:"+nRemotePort+"/test?verifyServerCertificate=false&useSSL=true&serverTimezone=UTC", "msandbox",
 					strDbPassword);
@@ -29,11 +25,9 @@ public class Project {
 			con.setAutoCommit(false);
 			
 			queryStmt = con.createStatement();
-			updateStmt = con.createStatement();
-			
+
 			ResultSet resultSet = null;
 			int updateResultSet = 0;
-      		String sql = "";
 			
       if(args.length<=0){
         usage();
@@ -185,7 +179,7 @@ public class Project {
 			} else {
 				if(updateResultSet == 1) {
 					System.out.print("Updated successfully!\n");
-				} else {
+				} else if(usagePrint == false) {
 					System.out.print("Error, statement failed to update the database.\n");
 				}
 			}
@@ -200,13 +194,7 @@ public class Project {
 			System.out.println("Error");
 			System.out.println(e.getMessage());
 		}
-		finally{
-			
-			/*
-			 * STEP 5
-			 * CLOSE CONNECTION AND SSH SESSION
-			 * 
-			 * */				
+		finally{			
 			con.setAutoCommit(true); // restore dafault mode
 			con.close();
 		}
@@ -214,7 +202,19 @@ public class Project {
 	}
 	
 	public static void usage() {
-		System.out.println("Usage: java Project [item1] [item2]");
+		System.out.println("Usage: java Project Command [Paramater1] [Parameter2]");
+		System.out.println("java Project CreateItem [ItemCode] [ItemDescritpion] [Price] : Creates an item with the given code, description and price.");
+		System.out.println("java Project CreatePurchase [ItemCode] [PurchaseQuantity] : Creates a purchase record for the given item code, and purchase quantity.");
+		System.out.println("java Project CreateShipment [ItemCode] [ShipmentQuantity] [ShipmentDate] : Creates a shipment record for the given item code, shipment quantity, and date");
+		System.out.println("java Project GetItems [ItemCode] : gets the information of an item by its item code. Use '%' to get all items.");
+		System.out.println("java Project GetShipments [ItemCode] : gets the information of a shipment by its item code. Use '%' to get all shipments.");
+		System.out.println("java Project GetPurchases [ItemCode] : gets the information of a purchase by its item code. Use '%' to get all purchases.");
+		System.out.println("java Project ItemsAvailable [ItemCode] : shows how much stock of an item is left (all shipments - all purchases) by item code. Use '%' to get availability on all items.");
+		System.out.println("java Project UpdateItem [ItemCode] [Price] : changes the price of a given item.");
+		System.out.println("java Project DeleteItem [ItemCode] : deletes an item given by an item code. Will not delete if there are any existing shipments or purchases.");
+		System.out.println("java Project DeleteShipment [ItemCode] : deletes the most recent shipment of a given item code.");
+		System.out.println("java Project DeletePurchase [ItemCode] : deletes the most recent purchase of a given item code.");
+		usagePrint = true;
 	}
 
 }

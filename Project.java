@@ -13,8 +13,8 @@ public class Project {
 		Statement queryStmt = null, updateStmt = null;
 		try
 		{	
-			int nRemotePort = port; // remote port number of your database
-			String strDbPassword = "password";                    // database login password
+			int nRemotePort = 55797; // remote port number of your database
+			String strDbPassword = "19hello99";                    // database login password
 			String dbName = "finalProject";  
 			
 			/*
@@ -38,11 +38,23 @@ public class Project {
 			if(args[0] == "/?") {
 				usage();
 			} else if(args[0].equals("CreateItem")) {
-				
+				if(args.length!=4) {
+					usage();
+				} else {
+					updateResultSet = updateStmt.executeUpdate("INSERT INTO `"+dbName+"`.`Item` (`ItemCode`, `ItemDescription`, `Price`) VALUES ('"+args[1]+"','"+args[2]+"','"+args[3]+"')");
+				}
 			} else if(args[0].equals("CreatePurchase")) {
-				
+				if(args.length!=3) {
+					usage();
+				} else {
+					updateResultSet = updateStmt.executeUpdate("INSERT INTO `"+dbName+"`.`Purchase` (ItemID, Quantity) SELECT ID, "+args[2]+" FROM `"+dbName+"`.`Item` WHERE `ItemCode` = "+args[1]+";");
+				}
 			} else if(args[0].equals("CreateShipment")) {
-				
+				if(args.length!=4) {
+					usage();
+				} else {
+					updateResultSet = updateStmt.executeUpdate("INSERT INTO `"+dbName+"`.`Shipment` (ItemID, Quantity, ShipmentDate) SELECT ID, "+args[2]+", '"+args[3]+"' FROM `"+dbName+"`.`Item` WHERE `ItemCode` = "+args[1]+";");
+				}
 			} else if(args[0].equals("GetItems")) {
 				if(args[1].equals("%")) {
 					resultSet = queryStmt.executeQuery("SELECT ItemCode,ItemDescription,Price FROM `"+dbName+"`.`Item`");
@@ -104,7 +116,14 @@ public class Project {
 						System.out.println(" ");
 					}	
 				}
+			} else {
+				if(updateResultSet == 1) {
+					System.out.print("Updated successfully!\n");
+				} else {
+					System.out.print("Error, statement failed to update the database.\n");
+				}
 			}
+
 		}
 		catch( SQLException e )
 		{

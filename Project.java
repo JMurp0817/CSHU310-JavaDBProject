@@ -13,9 +13,9 @@ public class Project {
 		Statement queryStmt = null, updateStmt = null;
 		try
 		{	
-			int nRemotePort = port; // remote port number of your database
-			String strDbPassword = "password";                    // database login password
-			String dbName = "finalProject";  
+			int nRemotePort = 55797; // remote port number of your database
+			String strDbPassword = "19hello99";                    // database login password
+			String dbName = "finalProject";
 			
 			/*
 			 * LOAD the Database DRIVER and obtain a CONNECTION
@@ -76,7 +76,11 @@ public class Project {
 			} else if(args[0].equals("ItemsAvailable")) {
 				
 			} else if(args[0].equals("UpdateItem")) {
-				
+				if(args.length!=3){
+					usage();
+				} else {
+					updateResultSet = updateStmt.executeUpdate("UPDATE `"+dbName+"`.`Item` SET Price = "+args[2]+" WHERE ItemCode = "+args[1]+";");
+				}
 			} else if(args[0].equals("DeleteItem")) {
 				updateResultSet = updateStmt.executeUpdate("DELETE FROM `"+dbName+"`.`Item` WHERE ItemCode ='"+args[1]+"'");
 				if(updateResultSet == 1) {

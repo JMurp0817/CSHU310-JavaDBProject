@@ -1,5 +1,6 @@
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -13,8 +14,8 @@ public class Project {
 		Statement queryStmt = null, updateStmt = null;
 		try
 		{	
-			int nRemotePort = port; // remote port number of your database
-			String strDbPassword = "password";                    // database login password
+			int nRemotePort = 55797; // remote port number of your database
+			String strDbPassword = "19hello99";                    // database login password
 			String dbName = "finalProject";
 			
 			/*
@@ -32,26 +33,40 @@ public class Project {
 			
 			ResultSet resultSet = null;
 			int updateResultSet = 0;
+      		String sql = "";
 			
-			if(args[0] == "/?") {
+      if(args.length<=0){
+        usage();
+      } else if(args[0] == "/?") {
 				usage();
 			} else if(args[0].equals("CreateItem")) {
 				if(args.length!=4) {
 					usage();
 				} else {
-					updateResultSet = updateStmt.executeUpdate("INSERT INTO `"+dbName+"`.`Item` (`ItemCode`, `ItemDescription`, `Price`) VALUES ('"+args[1]+"','"+args[2]+"','"+args[3]+"')");
+					PreparedStatement stmt = con.prepareStatement("INSERT INTO "+dbName+".Item (`ItemCode`, `ItemDescription`, `Price`) VALUES (?,?,?)");
+					stmt.setString(1, args[1]);
+					stmt.setString(2, args[2]);
+					stmt.setDouble(3, Double.parseDouble(args[3]));
+					updateResultSet = stmt.executeUpdate();
 				}
 			} else if(args[0].equals("CreatePurchase")) {
 				if(args.length!=3) {
 					usage();
 				} else {
-					updateResultSet = updateStmt.executeUpdate("INSERT INTO `"+dbName+"`.`Purchase` (ItemID, Quantity) SELECT ID, "+args[2]+" FROM `"+dbName+"`.`Item` WHERE `ItemCode` = '"+args[1]+"'");
+					PreparedStatement stmt = con.prepareStatement("INSERT INTO "+dbName+".Purchase (ItemID, Quantity) SELECT ID, ? FROM "+dbName+".Item WHERE ItemCode = ?");
+					stmt.setInt(1, Integer.parseInt(args[2]));
+					stmt.setString(2, args[1]);
+					updateResultSet = stmt.executeUpdate();
 				}
 			} else if(args[0].equals("CreateShipment")) {
 				if(args.length!=4) {
 					usage();
 				} else {
-					updateResultSet = updateStmt.executeUpdate("INSERT INTO `"+dbName+"`.`Shipment` (ItemID, Quantity, ShipmentDate) SELECT ID, "+args[2]+", '"+args[3]+"' FROM `"+dbName+"`.`Item` WHERE `ItemCode` = '"+args[1]+"'");
+					PreparedStatement stmt = con.prepareStatement("INSERT INTO `"+dbName+"`.`Shipment` (ItemID, Quantity, ShipmentDate) SELECT ID, ?, ? FROM `"+dbName+"`.`Item` WHERE `ItemCode` = ?");
+					stmt.setInt(1,Integer.parseInt(args[2]));
+					stmt.setString(2, args[3]);
+					stmt.setString(3, args[1]);
+					updateResultSet = stmt.executeUpdate();
 				}
 			} else if(args[0].equals("GetItems")) {
 				if(args.length != 2) {
